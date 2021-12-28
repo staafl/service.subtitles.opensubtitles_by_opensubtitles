@@ -1,4 +1,4 @@
-OpenSubtitles.org by OpenSubtitles KODI add-on
+OpenSubtitles.org by OpenSubtitles KODI add-on - DUAL SUBTITLE VERSION
 ==============================================
 
 How to install this addon in KODI:
