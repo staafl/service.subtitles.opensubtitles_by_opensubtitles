@@ -44,10 +44,7 @@ def Search( item ):
     return
 
   if search_data != None:
-    search_data.sort(key=lambda x: [not x['MatchedBy'] == 'moviehash',
-				     not os.path.splitext(x['SubFileName'])[0] == os.path.splitext(os.path.basename(unquote(item['file_original_path'])))[0],
-				     not normalizeString(xbmc.getInfoLabel("VideoPlayer.OriginalTitle")).lower() in x['SubFileName'].replace('.',' ').lower(),
-				     not x['LanguageName'] == PreferredSub])
+    search_data.sort(key=lambda x: [x['LanguageName'], x['SubFileName']])
     listitems=[]
     for item_data in search_data:
       ## hack to work around issue where Brazilian is not found as language in XBMC
@@ -74,20 +71,26 @@ def Search( item ):
         if(__addon__.getSetting('dualsub_enable') != 'true'):
           xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=listitem,isFolder=False)
     if(__addon__.getSetting('dualsub_enable') == 'true'):
+      subs=[]
       dialog = xbmcgui.Dialog()
-      ret = dialog.multiselect("Choose a subtitle", [i for i in listitems],useDetails=True)
-      if ret and len(ret) > 0:
-        subs=[]
-        for sub in ret:
+      sub = dialog.select("Choose bottom subtitle", [i for i in listitems],useDetails=True)
+      if sub:
+        subs.append({'ID':search_data[sub]['IDSubtitleFile'],
+          'link':search_data[sub]['ZipDownloadLink'],
+          'filename':search_data[sub]['SubFileName'],
+          'format':search_data[sub]['SubFormat']})
+        dialog = xbmcgui.Dialog()
+        ret = dialog.select("Choose top subtitle", [i for i in listitems],useDetails=True)
+        if sub:
           subs.append({'ID':search_data[sub]['IDSubtitleFile'],
             'link':search_data[sub]['ZipDownloadLink'],
             'filename':search_data[sub]['SubFileName'],
             'format':search_data[sub]['SubFormat']})
-        payload=json.dumps(subs[:2])
-        payload=urllib.parse.quote(payload)
-        listitem = xbmcgui.ListItem(label2=__language__(32019))
-        url = "plugin://%s/?action=download&payload=%s"% (__scriptid__,payload)
-        xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=listitem,isFolder=False)
+          payload=json.dumps(subs[:2])
+          payload=urllib.parse.quote(payload)
+          listitem = xbmcgui.ListItem(label2=__language__(32019))
+          url = "plugin://%s/?action=download&payload=%s"% (__scriptid__,payload)
+          xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=listitem,isFolder=False)
 
 def Download(id,url,format,stack=False):
   subtitle_list = []
