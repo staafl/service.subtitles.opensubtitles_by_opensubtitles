@@ -1,5 +1,7 @@
-OpenSubtitles.org by OpenSubtitles KODI add-on - DUAL SUBTITLE VERSION
+OpenSubtitles.org by OpenSubtitles KODI add-on
 ==============================================
+DUAL SUBTITLE VERSION
+----
 
 How to install this addon in KODI:
 - Download https://github.com/staafl/service.subtitles.opensubtitles_by_opensubtitles/releases/download/python3/script.module.pysubs2.zip
