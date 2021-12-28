@@ -10,7 +10,7 @@ import xbmcgui,xbmcplugin
 import xbmcvfs
 import uuid
 import json
-from lib import pysubs2
+import pysubs2
 import chardet
 
 __addon__ = xbmcaddon.Addon()
@@ -84,7 +84,7 @@ def Search( item ):
             'filename':search_data[sub]['SubFileName'],
             'format':search_data[sub]['SubFormat']})
         payload=json.dumps(subs[:2])
-        payload=urllib.quote(payload)
+        payload=urllib.parse.quote(payload)
         listitem = xbmcgui.ListItem(label2=__language__(32019))
         url = "plugin://%s/?action=download&payload=%s"% (__scriptid__,payload)
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=listitem,isFolder=False)
@@ -182,7 +182,7 @@ def merge(file):
     top_style.fontsize= int(__addon__.getSetting('top_fontsize'))
     if(__addon__.getSetting('top_bold') == 'true'):
       top_style.bold = 1
-    top_style.fontname = unicode(__addon__.getSetting('top_font'))
+    top_style.fontname = str(__addon__.getSetting('top_font'))
 
     if (__addon__.getSetting('top_color') == 'Yellow'):
       top_style.primarycolor=pysubs2.Color(255, 255, 0, 0)
@@ -196,10 +196,10 @@ def merge(file):
       top_style.outline=0
       top_style.borderstyle=4
     bottom_style.alignment = 2
-    bottom_style.fontsize= unicode(__addon__.getSetting('bottom_fontsize'))
+    bottom_style.fontsize= str(__addon__.getSetting('bottom_fontsize'))
     if (__addon__.getSetting('bottom_bold') =='true'):
       bottom_style.bold = 1
-    bottom_style.fontname = unicode(__addon__.getSetting('bottom_font'))
+    bottom_style.fontname = str(__addon__.getSetting('bottom_font'))
     if (__addon__.getSetting('bottom_color') == 'Yellow'):
       bottom_style.primarycolor=pysubs2.Color(255, 255, 0, 0)
     elif (__addon__.getSetting('bottom_color') == 'White'):
@@ -276,7 +276,7 @@ if params['action'] == 'search' or params['action'] == 'manualsearch':
 
 elif params['action'] == 'download':
   if(__addon__.getSetting('dualsub_enable') == 'true'):
-    payload=json.loads(urllib.unquote(params['payload']))
+    payload=json.loads(unquote(params['payload']))
     subs=[]
     for sub in payload:
       subs.append(Download(sub["ID"], sub["link"],sub["format"])[0])
