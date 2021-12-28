@@ -80,7 +80,7 @@ def Search( item ):
           'filename':search_data[sub]['SubFileName'],
           'format':search_data[sub]['SubFormat']})
         dialog = xbmcgui.Dialog()
-        ret = dialog.select("Choose top subtitle", [i for i in listitems],useDetails=True)
+        sub = dialog.select("Choose top subtitle", [i for i in listitems],useDetails=True)
         if sub:
           subs.append({'ID':search_data[sub]['IDSubtitleFile'],
             'link':search_data[sub]['ZipDownloadLink'],
