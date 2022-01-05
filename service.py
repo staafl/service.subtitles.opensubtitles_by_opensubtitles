@@ -75,17 +75,32 @@ def Search( item ):
       dialog = xbmcgui.Dialog()
       sub = dialog.select("Choose bottom subtitle", [i for i in listitems],useDetails=True)
       if sub:
+
+        offset = dialog.numeric(0, "Bottom subtitle offset in seconds")
+        if offset is None or offset == "":
+            offset = "0"
+
+        offset = int(offset)
+
         subs.append({'ID':search_data[sub]['IDSubtitleFile'],
           'link':search_data[sub]['ZipDownloadLink'],
           'filename':search_data[sub]['SubFileName'],
-          'format':search_data[sub]['SubFormat']})
-        dialog = xbmcgui.Dialog()
+          'format':search_data[sub]['SubFormat'],
+          'offset':offset})
         sub = dialog.select("Choose top subtitle", [i for i in listitems],useDetails=True)
         if sub:
+
+          offset = dialog.numeric(0, "Top subtitle offset in seconds")
+          if offset is None or offset == "":
+              offset = "0"
+
+          offset = int(offset)
+
           subs.append({'ID':search_data[sub]['IDSubtitleFile'],
             'link':search_data[sub]['ZipDownloadLink'],
             'filename':search_data[sub]['SubFileName'],
-            'format':search_data[sub]['SubFormat']})
+            'format':search_data[sub]['SubFormat'],
+            'offset':offset})
           payload=json.dumps(subs[:2])
           payload=urllib.parse.quote(payload)
           listitem = xbmcgui.ListItem(label2=__language__(32019))
@@ -174,10 +189,14 @@ def charset_detect(filename):
     return encoding
 
 
-def merge(file):
+def merge(file, payload):
     subs=[]
-    for sub in file:
-      subs.append(pysubs2.load(sub, encoding=charset_detect(sub)))
+    for sub in zip(file, payload):
+      subo = pysubs2.load(sub[0], encoding=charset_detect(sub[0]))
+      for line in subo:
+        line.start += sub[1]['offset'] * 1000
+        line.end += sub[1]['offset'] * 1000
+      subs.append(subo)
     ass = os.path.join(__temp__, "%s.ass" %(str(uuid.uuid4())))
     top_style = pysubs2.SSAStyle()
     bottom_style=subs[0].styles["Default"].copy()
@@ -283,7 +302,7 @@ elif params['action'] == 'download':
     subs=[]
     for sub in payload:
       subs.append(Download(sub["ID"], sub["link"],sub["format"])[0])
-    finalfile = merge(subs)
+    finalfile = merge(subs, payload)
     listitem = xbmcgui.ListItem(label=finalfile)
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=finalfile,listitem=listitem,isFolder=False)
   else:
