@@ -46,6 +46,7 @@ def Search( item ):
   if search_data != None:
     search_data.sort(key=lambda x: [x['LanguageName'], x['SubFileName']])
     listitems=[]
+    listitems.append(xbmcgui.ListItem(label = "Local File..."))
     for item_data in search_data:
       ## hack to work around issue where Brazilian is not found as language in XBMC
       if item_data["LanguageName"] == "Brazilian":
@@ -72,25 +73,31 @@ def Search( item ):
           xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=listitem,isFolder=False)
     if(__addon__.getSetting('dualsub_enable') == 'true'):
       subs=[]
+
       dialog = xbmcgui.Dialog()
+      json_query = xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "xbmc.GetInfoLabels", "params":{"labels": ["player.FolderPath"]}, "id": 1}' )
+      file_playing = json.loads(json_query).get('result').get('player.FolderPath')
+
       sub = dialog.select("Choose bottom subtitle", [i for i in listitems],useDetails=True)
-      if sub:
+      if sub > -1:
 
-        offset = dialog.numeric(0, "Bottom subtitle offset in seconds")
-        if offset is None or offset == "":
-            offset = "0"
+        if sub == 0:
+          file = dialog.browse(1, "Choose Subtitle File ", "*", defaultt = file_playing)
+          if not file:
+            return
+          offset = dialog.numeric(0, "Bottom subtitle offset x100ms", "0")
+          if offset is None or offset == "":
+              offset = "0"
 
-        offset = int(offset)
+          offset = int(offset)
 
-        subs.append({'ID':search_data[sub]['IDSubtitleFile'],
-          'link':search_data[sub]['ZipDownloadLink'],
-          'filename':search_data[sub]['SubFileName'],
-          'format':search_data[sub]['SubFormat'],
-          'offset':offset})
-        sub = dialog.select("Choose top subtitle", [i for i in listitems],useDetails=True)
-        if sub:
-
-          offset = dialog.numeric(0, "Top subtitle offset in seconds")
+          subs.append({'local': True,
+            'offset':offset,
+            'path': file
+          })
+        else:
+          sub -= 1
+          offset = dialog.numeric(0, "Bottom subtitle offset x100ms", "0")
           if offset is None or offset == "":
               offset = "0"
 
@@ -100,7 +107,40 @@ def Search( item ):
             'link':search_data[sub]['ZipDownloadLink'],
             'filename':search_data[sub]['SubFileName'],
             'format':search_data[sub]['SubFormat'],
-            'offset':offset})
+            'offset':offset,
+            'local': False})
+        sub = dialog.select("Choose top subtitle", [i for i in listitems],useDetails=True)
+        if sub > -1:
+
+          if sub == 0:
+            file = dialog.browse(1, "Choose Subtitle File ", "*", defaultt = file_playing)
+
+            if not file:
+              return
+            offset = dialog.numeric(0, "Top subtitle offset in x100ms", "0")
+            if offset is None or offset == "":
+                offset = "0"
+
+            offset = int(offset)
+
+            subs.append({'local': True,
+              'offset':offset,
+              'path': file
+            })
+          else:
+            offset = dialog.numeric(0, "Top subtitle offset in x100ms", "0")
+            if offset is None or offset == "":
+                offset = "0"
+
+            offset = int(offset)
+
+            sub -= 1
+            subs.append({'ID':search_data[sub]['IDSubtitleFile'],
+              'link':search_data[sub]['ZipDownloadLink'],
+              'filename':search_data[sub]['SubFileName'],
+              'format':search_data[sub]['SubFormat'],
+              'offset':offset,
+              'local': False})
           payload=json.dumps(subs[:2])
           payload=urllib.parse.quote(payload)
           listitem = xbmcgui.ListItem(label2=__language__(32019))
@@ -194,8 +234,8 @@ def merge(file, payload):
     for sub in zip(file, payload):
       subo = pysubs2.load(sub[0], encoding=charset_detect(sub[0]))
       for line in subo:
-        line.start += sub[1]['offset'] * 1000
-        line.end += sub[1]['offset'] * 1000
+        line.start += sub[1]['offset'] * 100
+        line.end += sub[1]['offset'] * 100
       subs.append(subo)
     ass = os.path.join(__temp__, "%s.ass" %(str(uuid.uuid4())))
     top_style = pysubs2.SSAStyle()
@@ -297,16 +337,23 @@ if params['action'] == 'search' or params['action'] == 'manualsearch':
   Search(item)
 
 elif params['action'] == 'download':
+  subs=[]
   if(__addon__.getSetting('dualsub_enable') == 'true'):
     payload=json.loads(unquote(params['payload']))
-    subs=[]
     for sub in payload:
-      subs.append(Download(sub["ID"], sub["link"],sub["format"])[0])
+      if (sub['local']):
+        subs.append(sub['path'])
+      else:
+        subs.append(Download(sub["ID"], sub["link"],sub["format"])[0])
     finalfile = merge(subs, payload)
     listitem = xbmcgui.ListItem(label=finalfile)
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=finalfile,listitem=listitem,isFolder=False)
   else:
-    subs = Download(params["ID"], params["link"],params["format"])
+    if (sub['local']):
+      subs.append(sub['path'])
+    else:
+      subs = Download(params["ID"], params["link"],params["format"])
+
     for sub in subs:
       listitem = xbmcgui.ListItem(label=sub)
       xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=sub,listitem=listitem,isFolder=False)
