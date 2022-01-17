@@ -5,7 +5,7 @@ DUAL SUBTITLE VERSION
 
 How to install this addon in KODI:
 - Download https://github.com/staafl/service.subtitles.opensubtitles_by_opensubtitles/releases/download/python3/script.module.pysubs2.zip
-https://github.com/staafl/service.subtitles.opensubtitles_by_opensubtitles/releases/download/python3-5.2.16/service.subtitles.opensubtitles_by_opensubtitles.zip
+https://github.com/staafl/service.subtitles.opensubtitles_by_opensubtitles/releases/download/python3-5.2.16/service.subtitles.opensubtitles_by_opensubtitles_by_staafl.zip
 - Open KODI -> System -> Settings -> Add-ons -> Install from zip file
 - Navigate to the file you downloaded (install script.module.pysubs2.zip first)
 
