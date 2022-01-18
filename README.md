@@ -9,7 +9,7 @@ https://github.com/staafl/service.subtitles.opensubtitles_by_opensubtitles/relea
 - Open KODI -> System -> Settings -> Add-ons -> Install from zip file
 - Navigate to the file you downloaded (install script.module.pysubs2.zip first)
 
-Use the add-in from the "Download Subtitles" menu in Kodi's player.
+Use the add-in from the "Download Subtitles" menu in Kodi's player. Also don't forget to set your subtitle language preferences in Kodi's settings (Settings -> Player -> Language -> Languages to download subitles for), or you'll only get subtitles in English.
 
 NB: this is a fork that adds dual subtitle support. It's a fork of https://github.com/moham96/service.subtitles.opensubtitles_by_opensubtitles, which adds dual subtitles to https://github.com/opensubtitles/service.subtitles.opensubtitles_by_opensubtitles, but this fork supports Python 3 (based on work from https://github.com/juokelis/service.subtitles.opensubtitles_by_opensubtitles with my own additions). I've also tweaked the UI to allow you to:
 
